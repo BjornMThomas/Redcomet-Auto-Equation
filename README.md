@@ -1,8 +1,3 @@
-<head>
-<title>Example.com homepage</title>
-<meta name="google-site-verification" content="google1995ca69c6c4588a" />
-</head>
-
 This is a python program whose only task is to automate the production of turning text into equation format on the program RedComet.
 
 ## How it works:
