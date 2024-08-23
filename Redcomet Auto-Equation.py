@@ -2,23 +2,29 @@ import pyautogui as pyag
 import keyboard as key
 import time as t
 import pyperclip
+import os
 
-print('press f4 for manual (f10 to exit),')
-print('press f8 for auto   (f9 to exit)')
+print('press f4 for manual (f1 to exit),')
+print('press f8 for auto   (f2 to exit)')
 last_clipboard_content = 0
-x = True
-y=True
+y=False
 
 def equate():
     global last_clipboard_content
     #Copy line
     pyag.hotkey('shift','home')
-    pyag.hotkey("ctrl", "c")
+    pyag.hotkey("ctrl", "x")
+    #Checks if line copied is the same as the line copied before if so skips to the next line
     clipboard_content=pyperclip.paste()
     if clipboard_content==last_clipboard_content:
+        pyag.hotkey("ctrl", "v")
+        pyperclip.copy("")
         pyag.press("down")
         pyag.press("end")
+        # pyag.hotkey("ctrl", "c")  # Copy the new line
+        # last_clipboard_content = pyperclip.paste()
         return
+    #Checks if the line copied is a line of text or an equation using predetermined rules
     symbols = 0
     letters = 0
     for i in range (len(clipboard_content)):
@@ -26,57 +32,64 @@ def equate():
             letters+=1
         else: 
             symbols+=1
-    print(str(symbols)+","+str(letters))
-    if letters>symbols and clipboard_content.find("=")==-1 and clipboard_content.find("~")==-1:
-        pyag.press("down")
+    if letters>symbols and clipboard_content.find("=")==-1 and clipboard_content.find("~")==-1 and clipboard_content!=last_clipboard_content:
+        pyag.hotkey("ctrl", "v")
+        last_clipboard_content = pyperclip.paste()
+        pyperclip.copy("")
         pyag.press("down")
         pyag.press("end")
         return
-
-    #Wait to copy
-    # t.sleep(0.5)
-    #Click equation button
-    #pyag.moveTo(equate_button[0],equate_button[1])
+    
+    #Clicks The Equation button the mouse is hovering over
     pyag.leftClick()
-    #Paste line
+    #Pastes line
     pyag.hotkey("ctrl", "v")
     last_clipboard_content = pyperclip.paste()
-    #Save
+    #Saves pasted line as equation
     pyag.press("tab")
     pyag.press("tab")
     pyag.press("tab")
     pyag.press("tab")
     pyag.press("enter")
-    #Next Line
+    #Skip To Next Line
     pyag.press("down")
     pyag.press("end")
-    x=True
+    #Replaces clipboard with a blank space
+    pyperclip.copy("")
+
+def stop_auto_equating():
+    global y
+    y = False
+
+def stop_program():
+    global running
+    running = False
+    print('Bye')
+    os._exit(0)
 
 
+key.add_hotkey('f2', stop_auto_equating)
+key.add_hotkey('f1', stop_program)
 
-while x:
-    #Enable key
+while True:
+    #Manual Enable Key
     if key.is_pressed('f4'):
         print("Equating...")
-        x=False
+        # x=False
         equate()
+        if key.is_pressed('f2'):
+            y = False
+            break
 
+    #Automatic Enable Key
     if key.is_pressed('f8'):
         print("Auto Equating...")
         y=True
         while y:
-            if key.is_pressed('f9'):
-                y=False
-                break
-            equate()    
+            equate()
+            t.sleep(0.01)
 
-    #Break key
-    if key.is_pressed('f10'):
-        print("Nooooooo")
-        y=False
-        break
-
-    #Keeps my pc fan quite
+    #Keeps my pc fan quiet
     t.sleep(0.01)
 
 t.sleep(2)
